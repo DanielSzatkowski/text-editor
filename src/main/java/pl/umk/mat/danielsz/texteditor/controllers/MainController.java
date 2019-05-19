@@ -21,6 +21,106 @@ public class MainController {
 	private TreeMap<String, Integer> wordsFrequency = new TreeMap<String, Integer>();
 	private List<String> stopWords = new ArrayList<String>();
 	
+	private String removeCharAt(String str, int p) {
+		if(str.isEmpty())
+			return " ";
+		
+		return str.substring(0, p) + str.substring(p + 1); 
+	}
+	
+	private String removeSpecialChars(String word)
+	{
+		if(word.isEmpty())
+			return word;
+		
+		char firstChar = word.charAt(0);
+		char lastChar = word.charAt(word.length() - 1);
+		
+		while(lastChar == '.' || lastChar == ','
+			|| lastChar == ';' || lastChar == ')'
+			|| lastChar == ']' || lastChar == '}'
+			|| lastChar == '-') {
+				word = removeCharAt(word, word.length() - 1);		
+
+				lastChar = word.charAt(word.length() - 1);
+		}
+
+		if(firstChar == '{' || firstChar == '[' || firstChar == '(') {
+				word = removeCharAt(word, 0);
+		}	
+		
+		return word;
+	}
+	
+	private String deleteAllStopWords(String txt)
+	{
+		for(String word : txt.split("\\s")) {
+			if(word.isEmpty())
+				continue;
+			
+			word = removeSpecialChars(word);
+		}
+		
+		for(String word : stopWords) {
+			txt = " " + txt + " ";
+			txt = txt.replaceAll("(?i) " + word + " ", " ");
+		}
+		
+		return txt;
+	}
+	
+	public void modifyText() 
+	{
+		if(usersText.getText() == null || usersText.getText().isEmpty() 
+				|| regexWord.getText()  == null || regexWord.getText().isEmpty() 
+				|| changeWord.getText() == null || changeWord.getText().isEmpty())
+			return;
+		
+		String textToModify = usersText.getText();
+		
+		String newText = textToModify.replaceAll(regexWord.getText(), changeWord.getText());
+		usersText.setText(newText);
+	}
+	
+	public void countWords()
+	{
+		if(usersText.getText() == null || usersText.getText().isEmpty())
+			return;
+		
+		String txt = usersText.getText();
+		txt = deleteAllStopWords(txt);
+		
+		if(!txt.isEmpty()) {
+			for(String word: txt.split("\\s")){
+				word = removeSpecialChars(word);
+				
+				if(wordsFrequency.get(word) == null)
+					wordsFrequency.put(word, 1);
+				else
+					wordsFrequency.put(word, wordsFrequency.get(word) + 1);
+			}
+		}
+		
+		try {
+        	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/views/WordsFrequencyView.fxml"));
+            Parent root = fxmlLoader.load();
+            
+            Stage stage = new Stage();
+            stage.setTitle("Words Frequency");
+            stage.setScene(new Scene(root, 610, 430));
+            
+            WordsFrequencyController otherController = fxmlLoader.getController();
+            otherController.setWordsFrequency(wordsFrequency);
+            otherController.showWords();
+            stage.show();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+		
+		wordsFrequency.clear();
+	}
+	
 	public void initialize()
 	{
 		stopWords.add("a");
@@ -373,105 +473,5 @@ public class MainController {
 		stopWords.add("żadnych");
 		stopWords.add("że");
 		stopWords.add("żeby");
-	}
-		
-	private String removeCharAt(String str, int p) {
-		if(str.isEmpty())
-			return " ";
-		
-		return str.substring(0, p) + str.substring(p + 1); 
-	}
-	
-	private String removeSpecialChars(String word)
-	{
-		if(word.isEmpty())
-			return word;
-		
-		char firstChar = word.charAt(0);
-		char lastChar = word.charAt(word.length() - 1);
-		
-		while(lastChar == '.' || lastChar == ','
-			|| lastChar == ';' || lastChar == ')'
-			|| lastChar == ']' || lastChar == '}'
-			|| lastChar == '-') {
-				word = removeCharAt(word, word.length() - 1);		
-
-				lastChar = word.charAt(word.length() - 1);
-		}
-
-		if(firstChar == '{' || firstChar == '[' || firstChar == '(') {
-				word = removeCharAt(word, 0);
-		}	
-		
-		return word;
-	}
-	
-	private String deleteAllStopWords(String txt)
-	{
-		for(String word : txt.split("\\s")) {
-			if(word.isEmpty())
-				continue;
-			
-			word = removeSpecialChars(word);
-		}
-		
-		for(String word : stopWords) {
-			txt = " " + txt + " ";
-			txt = txt.replaceAll("(?i) " + word + " ", " ");
-		}
-		
-		return txt;
-	}
-	
-	public void modifyText() 
-	{
-		if(usersText.getText() == null || usersText.getText().isEmpty() 
-				|| regexWord.getText()  == null || regexWord.getText().isEmpty() 
-				|| changeWord.getText() == null || changeWord.getText().isEmpty())
-			return;
-		
-		String textToModify = usersText.getText();
-		
-		String newText = textToModify.replaceAll(regexWord.getText(), changeWord.getText());
-		usersText.setText(newText);
-	}
-	
-	public void countWords()
-	{
-		if(usersText.getText() == null || usersText.getText().isEmpty())
-			return;
-		
-		String txt = usersText.getText();
-		txt = deleteAllStopWords(txt);
-		
-		if(!txt.isEmpty()) {
-			for(String word: txt.split("\\s")){
-				word = removeSpecialChars(word);
-				
-				if(wordsFrequency.get(word) == null)
-					wordsFrequency.put(word, 1);
-				else
-					wordsFrequency.put(word, wordsFrequency.get(word) + 1);
-			}
-		}
-		
-		try {
-        	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/views/WordsFrequencyView.fxml"));
-            Parent root = fxmlLoader.load();
-            
-            Stage stage = new Stage();
-            stage.setTitle("Words Frequency");
-            stage.setScene(new Scene(root, 610, 430));
-            
-            WordsFrequencyController otherController = fxmlLoader.getController();
-            otherController.setWordsFrequency(wordsFrequency);
-            otherController.showWords();
-            stage.show();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-		
-		wordsFrequency.clear();
 	}
 }
