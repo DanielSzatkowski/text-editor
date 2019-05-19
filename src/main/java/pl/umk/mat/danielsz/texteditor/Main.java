@@ -15,7 +15,7 @@ public class Main extends Application{
 		try {
 			BorderPane root = (BorderPane)FXMLLoader.load(getClass().getResource("/views/MainView.fxml"));
 			Scene scene = new Scene(root,700, 400);
-			//scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+			
 			primaryStage.setTitle("TextEditor");
 			primaryStage.setScene(scene);
 			primaryStage.show();
