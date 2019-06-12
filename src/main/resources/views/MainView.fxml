@@ -44,7 +44,8 @@
             <RowConstraints maxHeight="40.0" minHeight="40.0" prefHeight="40.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints maxHeight="30.0" minHeight="30.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints maxHeight="231.0" minHeight="10.0" prefHeight="216.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="47.0" minHeight="30.0" prefHeight="32.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="231.0" minHeight="10.0" prefHeight="170.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
             <Pane GridPane.rowIndex="1">
@@ -77,6 +78,11 @@
                <GridPane.margin>
                   <Insets top="5.0" />
                </GridPane.margin>
+            </Pane>
+            <Pane prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="5">
+               <children>
+                  <Button layoutX="53.0" layoutY="2.0" mnemonicParsing="false" onAction="#showStopListView" prefHeight="25.0" prefWidth="99.0" text="Edit Stop List" />
+               </children>
             </Pane>
          </children>
       </GridPane>
