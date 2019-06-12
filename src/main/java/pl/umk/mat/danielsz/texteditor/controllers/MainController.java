@@ -24,19 +24,19 @@ public class MainController {
 	
 	public void initialize()
 	{
-		stopWords.addAll(Arrays.asList("ach", "aj", "albo", "bardzo", "bez", "bo", "być", 
+		stopWords.addAll(Arrays.asList("a", "ale", "ach", "aj", "albo", "bardzo", "bez", "bo", "by", "być", 
 				"ci", "cię", "ciebie", "co", "czy", "daleko", "dla", "dlaczego", "dlatego", "do", 
 				"dobrze", "dokąd", "dość", "dużo", "dwa", "dwaj", "dwie", "dwoje", "dziś", "dzisiaj", 
-				"gdyby", "gdzie", "go", "ich", "ile", "im", "inny", "ja", "ją", "jak", "jakby", "jaki", 
+				"gdyby", "gdzie", "go", "i", "ich", "ile", "im", "inny", "ja", "ją", "jak", "jakby", "jaki", 
 				"je", "jeden", "jedna", "jedno", "jego", "jej", "jemu", "jeśli", "jest", "jestem", "jeżeli", 
-				"już", "każdy", "kiedy", "kierunku", "kto", "ku", "lub", "ma", "mają", "mam", "mi", "mną", 
+				"już", "każdy", "kiedy", "kierunku", "kto", "ku", "lecz", "lub", "ma", "mają", "mam", "mi", "mną", 
 				"mnie", "moi", "mój", "moja", "moje", "może", "mu", "my", "na", "nam", "nami", "nas", 
 				"nasi", "nasz", "nasza", "nasze", "natychmiast", "nią", "nic", "nich", "nie", "niego", 
-				"niej", "niemu", "nigdy", "nim", "nimi", "niż", "obok", "od", "około", "on", "ona", 
+				"niej", "niemu", "nigdy", "nim", "nimi", "niż", "o", "obok", "od", "około", "on", "ona", 
 				"one", "oni", "ono", "owszem", "po", "pod", "ponieważ", "przed", "przedtem", "są", 
 				"sam", "sama", "się", "skąd", "tak", "taki", "tam", "ten", "to", "tobą", "tobie", "tu", 
-				"tutaj", "twoi", "twój", "twoja", "twoje", "ty", "wam", "wami", "was", "wasi", 
-				"wasz", "wasza", "wasze", "we", "więc", "wszystko", "wtedy", "wy", "żaden", "zawsze", "że" ));
+				"tutaj", "twoi", "twój", "twoja", "twoje", "ty", "u", "w", "wam", "wami", "was", "wasi", 
+				"wasz", "wasza", "wasze", "we", "więc", "wszystko", "wtedy", "wy", "z", "za", "żaden", "zawsze", "że"));
 	}
 		
 	private String removeCharAt(String str, int p) {
@@ -46,8 +46,23 @@ public class MainController {
 		return str.substring(0, p) + str.substring(p + 1); 
 	}
 	
+	private String deleteAnnotation(String word)
+	{
+		int i = word.length() - 1;
+		while(word.charAt(i) != '[' && i > 0){
+			word = removeCharAt(word, i);
+			i--;
+		}
+		
+		word = removeCharAt(word, i);
+		return word;
+	}
+	
 	private String removeSpecialChars(String word)
 	{
+		if(word.matches(".*\\[.*\\]"))
+			word = deleteAnnotation(word);
+		
 		if(word.isEmpty())
 			return word;
 		
@@ -57,42 +72,53 @@ public class MainController {
 		while(lastChar == '.' || lastChar == ','
 			|| lastChar == ';' || lastChar == ')'
 			|| lastChar == ']' || lastChar == '}'
-			|| lastChar == '-') {
+			|| lastChar == '-' || lastChar == '?' 
+			|| lastChar == '\"' || lastChar == '!'
+			|| lastChar == ',' || lastChar == ':'
+			|| lastChar == '|' || lastChar == '['
+			|| lastChar == '”' || lastChar == '…'
+			|| lastChar == '+' || lastChar == '/') {
 				word = removeCharAt(word, word.length() - 1);		
 
 				if(!word.isEmpty())
 					lastChar = word.charAt(word.length() - 1);
 		}
 
-		if(firstChar == '{' || firstChar == '[' || firstChar == '(') {
+		if(firstChar == '{' || firstChar == '[' || firstChar == '(' || firstChar  == '\"' || firstChar == '„' || firstChar == '…' || lastChar == '+'
+				|| lastChar == '/') {
 				word = removeCharAt(word, 0);
 		}	
+		
+		if(word.matches(".*\\[.*\\]"))
+			word = deleteAnnotation(word);
 		
 		return word;
 	}
 	
 	private String deleteAllStopWords(String txt)
 	{
+		String ret = " ";
 		for(String word : txt.split("\\s")) {
 			if(word.isEmpty())
 				continue;
 			
 			word = removeSpecialChars(word);
+			ret += word + " ";
 		}
-		
+
 		for(String word : stopWords) {
-			txt = " " + txt + " ";
-			txt = txt.replaceAll("(?i) " + word + " ", " ");
+			ret = ret.replaceAll("\\b" + word + "\\b", "");
+			ret = ret.replaceAll("\\b"+Character.toUpperCase(word.charAt(0)) + removeCharAt(word, 0) +"\\b", "");
 		}
 		
-		return txt;
+		return ret;
 	}
 	
 	public void modifyText() 
 	{
 		if(usersText.getText() == null || usersText.getText().isEmpty() 
 				|| regexWord.getText()  == null || regexWord.getText().isEmpty() 
-				|| changeWord.getText() == null || changeWord.getText().isEmpty())
+				|| changeWord.getText() == null)
 			return;
 		
 		String textToModify = usersText.getText();
@@ -101,22 +127,52 @@ public class MainController {
 		usersText.setText(newText);
 	}
 	
+	public void showStopListView()
+	{
+		try {
+        	FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/views/StopListView.fxml"));
+            Parent root = fxmlLoader.load();
+            
+            Stage stage = new Stage();
+            stage.setTitle("Stop List");
+            stage.setScene(new Scene(root, 610, 430));
+            
+            StopListController otherController = fxmlLoader.getController();
+            otherController.setStopList(stopWords);
+            otherController.showStopWords();
+            
+            stage.show();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+	}
+	
 	public void countWords()
 	{
+		wordsFrequency.clear();
 		if(usersText.getText() == null || usersText.getText().isEmpty())
 			return;
 		
 		String txt = usersText.getText();
-		txt = deleteAllStopWords(txt);
+		String txtAfterMod = " ";
 		
 		if(!txt.isEmpty()) {
 			for(String word: txt.split("\\s")){
 				word = removeSpecialChars(word);
 				
-				if(wordsFrequency.get(word) == null)
-					wordsFrequency.put(word, 1);
+				txtAfterMod = txtAfterMod + word + " ";
+			}
+			
+			txtAfterMod = deleteAllStopWords(txtAfterMod);
+			
+			for(String word: txtAfterMod.split("\\s")){
+				word = removeSpecialChars(word);
+				
+				if(wordsFrequency.get(word.toLowerCase()) == null)
+					wordsFrequency.put(word.toLowerCase(), 1);
 				else
-					wordsFrequency.put(word, wordsFrequency.get(word) + 1);
+					wordsFrequency.put(word.toLowerCase(), wordsFrequency.get(word.toLowerCase()) + 1);
 			}
 		}
 		
